@@ -111,31 +111,33 @@ func (c *Client) Fetch3MinuteCandle(instrumentToken int, startTime time.Time, en
 
 	// Check if there are no rows returned
 	if !rows.Next() {
+		fmt.Println("No rows returned")
 		return CandleData{}, errors.New("no rows returned")
 	}
+	fmt.Println("Rows returned")
+	for rows.Next() {
+		var (
+			open  float64
+			high  float64
+			low   float64
+			close float64
+		)
 
-	var (
-		open  float64
-		high  float64
-		low   float64
-		close float64
-	)
+		if err := rows.Scan(&open, &high, &low, &close); err != nil {
+			return CandleData{}, err
+		}
 
-	if err := rows.Scan(&open, &high, &low, &close); err != nil {
-		return CandleData{}, err
+		candle := CandleData{
+			InstrumentToken: uint32(instrumentToken),
+			TimeStamp:       startTime,
+			Open:            open,
+			High:            high,
+			Low:             low,
+			Close:           close,
+		}
+		return candle, nil
 	}
-
-	candle := CandleData{
-		InstrumentToken: uint32(instrumentToken),
-		TimeStamp:       startTime,
-		Open:            open,
-		High:            high,
-		Low:             low,
-		Close:           close,
-	}
-
-	return candle, nil
-
+	return CandleData{}, nil
 }
 
 // WITH w AS (
