@@ -104,26 +104,27 @@ func (c *Client) Fetch3MinuteCandle(instrumentToken int, startTime time.Time, en
 		return CandleData{}, err
 	}
 	defer rows.Close()
-	//for rows.Next() {
-	var (
-		open  float64
-		high  float64
-		low   float64
-		close float64
-	)
-	if err := rows.Scan(&open, &high, &low, &close); err != nil {
-		return CandleData{}, err
+	for rows.Next() {
+		var (
+			open  float64
+			high  float64
+			low   float64
+			close float64
+		)
+		if err := rows.Scan(&open, &high, &low, &close); err != nil {
+			return CandleData{}, err
+		}
+		candle := CandleData{
+			InstrumentToken: uint32(instrumentToken),
+			TimeStamp:       startTime,
+			Open:            open,
+			High:            high,
+			Low:             low,
+			Close:           close,
+		}
+		return candle, nil
 	}
-	candle := CandleData{
-		InstrumentToken: uint32(instrumentToken),
-		TimeStamp:       startTime,
-		Open:            open,
-		High:            high,
-		Low:             low,
-		Close:           close,
-	}
-	return candle, nil
-	//}
+	return CandleData{}, nil
 
 }
 
